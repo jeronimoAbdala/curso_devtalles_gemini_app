@@ -9,8 +9,10 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Google Gemini')),
       body: ListView(
+      
         children: [
           ListTile(
+        
             leading: const CircleAvatar(
               backgroundColor: Colors.pink,
               child: Icon(Icons.person_outline),
