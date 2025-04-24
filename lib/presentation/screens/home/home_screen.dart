@@ -7,23 +7,18 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('data'),
-
-      ),
-
-      
-      body:ListView(
+      appBar: AppBar(title: const Text('Google Gemini')),
+      body: ListView(
         children: [
           ListTile(
             leading: const CircleAvatar(
-              backgroundColor: Colors.lightBlue,
-              child: Icon(Icons.person_2_outlined),
+              backgroundColor: Colors.pink,
+              child: Icon(Icons.person_outline),
             ),
-            title: const Text('data'),
-            subtitle: const Text('data'),
-            onTap: () => context.push('/basic-prompt')),
-          
+            title: const Text('Prompt básico a Gemini'),
+            subtitle: const Text('Usando un modelo flash'),
+            onTap: () => context.push('/basic-prompt'),
+          ),
         ],
       ),
     );
