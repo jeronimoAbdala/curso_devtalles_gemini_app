@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -19,7 +20,10 @@ class HomeScreen extends StatelessWidget {
               backgroundColor: Colors.lightBlue,
               child: Icon(Icons.person_2_outlined),
             ),
-          )
+            title: const Text('data'),
+            subtitle: const Text('data'),
+            onTap: () => context.push('/basic-prompt')),
+          
         ],
       ),
     );
