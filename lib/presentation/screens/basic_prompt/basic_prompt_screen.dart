@@ -31,7 +31,7 @@ class BasicPromptScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('data'),
+        title: const Text('Chat Basico, sin historial'),
 
       ),
       body: Chat(
