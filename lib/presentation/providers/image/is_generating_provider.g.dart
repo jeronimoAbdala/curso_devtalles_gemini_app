@@ -1,27 +1,27 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'chat_with_context.dart';
+part of 'is_generating_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$chatWithContextHash() => r'836f85038e1c3aee919dae8d9b60f3870e44b093';
+String _$isGeneratingHash() => r'4badd18a5979dedef022b298c72fe10449eb251f';
 
-/// See also [ChatWithContext].
-@ProviderFor(ChatWithContext)
-final chatWithContextProvider =
-    NotifierProvider<ChatWithContext, List<Message>>.internal(
-      ChatWithContext.new,
-      name: r'chatWithContextProvider',
+/// See also [IsGenerating].
+@ProviderFor(IsGenerating)
+final isGeneratingProvider =
+    AutoDisposeNotifierProvider<IsGenerating, bool>.internal(
+      IsGenerating.new,
+      name: r'isGeneratingProvider',
       debugGetCreateSourceHash:
           const bool.fromEnvironment('dart.vm.product')
               ? null
-              : _$chatWithContextHash,
+              : _$isGeneratingHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
-typedef _$ChatWithContext = Notifier<List<Message>>;
+typedef _$IsGenerating = AutoDisposeNotifier<bool>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

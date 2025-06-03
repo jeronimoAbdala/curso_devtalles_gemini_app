@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:gemini_app/config/theme/app_theme.dart';
 import 'package:image_picker/image_picker.dart';

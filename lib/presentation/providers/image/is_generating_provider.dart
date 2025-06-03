@@ -1,17 +1,16 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-part 'is_gemini_writing.g.dart';
+part 'is_generating_provider.g.dart';
 
 @riverpod
-class IsGeminiWriting extends _$IsGeminiWriting {
+class IsGenerating extends _$IsGenerating {
   @override
   bool build() => false;
 
-  void setIsWriting() {
+  void setIsGenerating() {
     state = true;
   }
 
-  void setIsNotWriting() {
+  void setIsNotGenerating() {
     state = false;
   }
 }

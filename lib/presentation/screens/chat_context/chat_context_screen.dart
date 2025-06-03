@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gemini_app/presentation/providers/chat/chat_with_context.dart';
-import 'package:gemini_app/presentation/widgets/chat/custom_bottom_chat_picker.dart';
+import 'package:gemini_app/presentation/widgets/chat/custom_bottom_input.dart';
 
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

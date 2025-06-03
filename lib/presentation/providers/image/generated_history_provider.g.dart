@@ -1,27 +1,27 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'chat_with_context.dart';
+part of 'generated_history_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$chatWithContextHash() => r'836f85038e1c3aee919dae8d9b60f3870e44b093';
+String _$generatedHistoryHash() => r'b9e19792095c5dbb83be656cfc092873a6691775';
 
-/// See also [ChatWithContext].
-@ProviderFor(ChatWithContext)
-final chatWithContextProvider =
-    NotifierProvider<ChatWithContext, List<Message>>.internal(
-      ChatWithContext.new,
-      name: r'chatWithContextProvider',
+/// See also [GeneratedHistory].
+@ProviderFor(GeneratedHistory)
+final generatedHistoryProvider =
+    NotifierProvider<GeneratedHistory, List<String>>.internal(
+      GeneratedHistory.new,
+      name: r'generatedHistoryProvider',
       debugGetCreateSourceHash:
           const bool.fromEnvironment('dart.vm.product')
               ? null
-              : _$chatWithContextHash,
+              : _$generatedHistoryHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
-typedef _$ChatWithContext = Notifier<List<Message>>;
+typedef _$GeneratedHistory = Notifier<List<String>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
