@@ -39,6 +39,15 @@ class HomeScreen extends StatelessWidget {
             subtitle: const Text('Crea y edita imágenes con AI'),
             onTap: () => context.push('/image-playground'),
           ),
+          ListTile(
+            leading: const CircleAvatar(
+              backgroundColor: Colors.redAccent,
+              child: Icon(Icons.file_copy_sharp),
+            ),
+            title: const Text('Fishing Calculator'),
+            subtitle: const Text('Calcula y mostra los detalles de tu pesca '),
+            onTap: () => context.push('/fishingCalculator'),
+          ),
         ],
       ),
     );

@@ -89,31 +89,62 @@ class GeminiImpl {
   }
 
 
-  Future<String?> generateImage(String prompt, { List<XFile> files = const [],}) async {
-
-    //Primero, declaramos los parametros opcionales o no.
+   Future<String?> generateImage(
+    String prompt, {
+    List<XFile> files = const [],
+  }) async {
     final formData = FormData();
     formData.fields.add(MapEntry('prompt', prompt));
 
-    for(final file in files ){
+    for (final file in files) {
       formData.files.add(
-        MapEntry('files',
-        await MultipartFile.fromFile(file.path, filename: file.name)
-        )
+        MapEntry(
+          'files',
+          await MultipartFile.fromFile(file.path, filename: file.name),
+        ),
       );
     }
 
-
-    //Segundo, recibimos la data
     try {
-      final response = await http.post('image-generation', data: formData);
-      return response.data['imageUrl'];
+      final response = await http.post('/image-generation', data: formData);
+      final imageUrl = 'http://192.168.0.229:3000/api/gemini/ai-images/' +  response.data['imageUrl'];
+    
 
+      if (imageUrl == '') {
+        return null;
+      }
+
+      return imageUrl;
     } catch (e) {
       print(e);
       return null;
     }
   }
 
+Future<String?> getImage(String imageName) async {
+  // 1) Armo la ruta relativa al endpoint
+  final relativePath = '/ai-images/$imageName';
+
+  try {
+    // 2) Hago un GET para ver si existe (no me interesa el body, 
+    //    solo el statusCode)
+    final response = await http.get(
+      relativePath,
+      options: Options(responseType: ResponseType.bytes),
+    );
+
+    if (response.statusCode == 200) {
+      // 3) Si existe, retorno la URL completa (baseUrl + relativePath)
+      return http.options.baseUrl + relativePath;
+    } else {
+      // 4) Si no es 200 (por ejemplo 404), devuelvo null
+      return null;
+    }
+  } catch (e) {
+    // Error de red, servidor caído, CORS, etc.
+    print('Error en getImage(): $e');
+    return null;
+  }
+}
 
 }

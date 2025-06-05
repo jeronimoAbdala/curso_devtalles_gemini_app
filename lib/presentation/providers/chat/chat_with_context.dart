@@ -7,17 +7,22 @@ import 'package:flutter_chat_types/flutter_chat_types.dart';
 
 import 'package:gemini_app/config/gemini/gemini_impl.dart';
 
+
+
+// -> declaramos riverpod y sincronizamos el archivo.g con el comando que esta en readme.md
 part 'chat_with_context.g.dart';
-
 final uuid = Uuid();
-
 @Riverpod(keepAlive: true)
 class ChatWithContext extends _$ChatWithContext {
+
+  // -> importamos la impl de gemini (conexion con el endpoint)
   final gemini = GeminiImpl();
 
   late User geminiUser;
   late String chatId;
 
+  // ->  despues del override, decimos que tipo de dato va a devolver este metodo.
+  //      En este caso: un listao de mensajes.
   @override
   List<Message> build() {
     geminiUser = ref.read(geminiUserProvider);
@@ -25,6 +30,9 @@ class ChatWithContext extends _$ChatWithContext {
     return [];
   }
 
+// -----------------------------------------------------------------
+// Ahora declaramos las funciones que vamos a poder usar
+// -----------------------------------------------------------------
   void addMessage({
     required PartialText partialText,
     required User user,
@@ -77,7 +85,9 @@ class ChatWithContext extends _$ChatWithContext {
     });
   }
 
-  // Helper methods
+// -----------------------------------------------------------------
+// Funciones Helpers
+// -----------------------------------------------------------------
   void newChat() {
     chatId = uuid.v4();
     state = [];

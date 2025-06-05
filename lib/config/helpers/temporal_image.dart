@@ -8,9 +8,7 @@ import 'package:uuid/uuid.dart';
 
 // path_provider
 class TemporalImages {
-  
   static Future<XFile> xFileFromUrl(String imageUrl) async {
-    
     final uuid = Uuid();
     final tempDir = await getTemporaryDirectory();
     final filePath = '${tempDir.path}/${uuid.v4()}.png';

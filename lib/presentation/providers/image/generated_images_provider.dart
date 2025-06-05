@@ -17,6 +17,7 @@ class GeneratedImages extends _$GeneratedImages {
   String previousPrompt = '';
   List<XFile> previousImages = [];
 
+// -> devuelve una lista de St
   @override
   List<String> build() {
     isGeneratingNotifier = ref.read(isGeneratingProvider.notifier);
@@ -41,12 +42,13 @@ class GeneratedImages extends _$GeneratedImages {
   }) async {
     isGeneratingNotifier.setIsGenerating();
 
-    final imageUrl = await gemini.generateImage(prompt, files: images);
+   final imageUrl = await gemini.generateImage(prompt, files: images);
 
     if (imageUrl == null) {
       isGeneratingNotifier.setIsNotGenerating();
       return;
     }
+
 
     previousPrompt = prompt;
     previousImages = images;
@@ -59,8 +61,12 @@ class GeneratedImages extends _$GeneratedImages {
     }
   }
 
+
   Future<void> generateImageWithPreviousPrompt() async {
     if (previousPrompt.isEmpty) return;
+
+    print('prompt' + previousPrompt);
+
 
     await generateImage(previousPrompt, images: previousImages);
   }

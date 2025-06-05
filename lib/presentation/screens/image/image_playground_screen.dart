@@ -39,6 +39,7 @@ class ImagePlaygroundScreen extends ConsumerWidget {
 
           // Selector de estilo de arte
           ArtStyleSelector(),
+
           // Llenar el espacio
           Expanded(
             child: Padding(
@@ -46,13 +47,17 @@ class ImagePlaygroundScreen extends ConsumerWidget {
               child: HistoryGrid(),
             ),
           ),
+
           // Espacio para el prompt
           CustomBottomInput(
-            onSend: (partialText, {List<XFile> images = const []}) async {
+            onSend: 
+            (partialText, {List<XFile> images = const []}) async {
               final generatedImagesNotifier = ref.read(
                 generatedImagesProvider.notifier,
               );
+      
               final selectedStyle = ref.read(selectedArtStyleProvider);
+
               final selectedImage =
                   await ref.read(selectedImageProvider.notifier).getXFile();
 
