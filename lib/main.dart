@@ -20,7 +20,7 @@ class GeminiApp extends StatelessWidget {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       routerConfig: appRouter,
-      theme: AppTheme(isDarkMode: true).getTheme(),
+      theme: AppTheme(isDarkMode: false).getTheme(),
       
     );
   }

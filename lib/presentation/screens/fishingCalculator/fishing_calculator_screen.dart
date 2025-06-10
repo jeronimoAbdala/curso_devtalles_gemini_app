@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gemini_app/presentation/providers/users/user_provider.dart';
+import 'package:gemini_app/presentation/widgets/buttons/gradientButton.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:gemini_app/config/theme/app_theme.dart';
@@ -11,10 +13,7 @@ class ImageWithCaption {
   final XFile file;
   String caption;
 
-  ImageWithCaption({
-    required this.file,
-    this.caption = '',
-  });
+  ImageWithCaption({required this.file, this.caption = ''});
 }
 
 /// Notifier que guarda la lista de (imagen + texto)
@@ -38,8 +37,8 @@ class GalleryImagesNotifier extends StateNotifier<List<ImageWithCaption>> {
 /// Provider público para la lista de ImageWithCaption
 final galleryImagesProvider =
     StateNotifierProvider<GalleryImagesNotifier, List<ImageWithCaption>>(
-  (ref) => GalleryImagesNotifier(),
-);
+      (ref) => GalleryImagesNotifier(),
+    );
 
 /// Provider para guardar el índice de página actual (0 = “Agregar imagen”)
 final currentPageProvider = StateProvider<int>((ref) => 0);
@@ -47,6 +46,8 @@ final currentPageProvider = StateProvider<int>((ref) => 0);
 /// Pantalla principal
 class FishingCalculatorScreen extends ConsumerStatefulWidget {
   const FishingCalculatorScreen({super.key});
+
+  
 
   @override
   ConsumerState<FishingCalculatorScreen> createState() =>
@@ -61,10 +62,8 @@ class _FishingCalculatorScreenState
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(
-      viewportFraction: 0.6,
-      initialPage: 0,
-    );
+    
+    _pageController = PageController(viewportFraction: 0.6, initialPage: 0);
 
     _textController = TextEditingController();
 
@@ -103,16 +102,16 @@ class _FishingCalculatorScreenState
 
   @override
   Widget build(BuildContext context) {
+
+    final user = ref.watch(userProvider);
     // Obtenemos la lista actualizada de (imagen + caption)
     final imagesWithCaptions = ref.watch(galleryImagesProvider);
     // Obtenemos el índice de página activo
     final currentPage = ref.watch(currentPageProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Fishing AI'),
-      ),
-      backgroundColor: seedColor,
+      appBar: AppBar(title: const Text('Fishing AI')),
+      backgroundColor: lightBlue,
       body: Column(
         children: [
           //* ------------------------------
@@ -146,18 +145,31 @@ class _FishingCalculatorScreenState
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: TextField(
               controller: _textController,
-              enabled: currentPage != 0, // Solo editable si no estamos en “Agregar”
+              enabled:
+                  currentPage != 0, // Solo editable si no estamos en “Agregar”
               decoration: InputDecoration(
-                hintText: currentPage == 0
-                    ? 'Desliza a una imagen para agregar texto'
-                    : 'Escribe el texto para esta foto...',
+                hintText:
+                    currentPage == 0
+                        ? 'Desliza a una imagen para agregar texto'
+                        : null, // eliminamos hint si queremos mostrar botón
                 filled: true,
                 fillColor: Colors.white,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
                 ),
+                suffixIcon:
+                    currentPage != 0
+                        ? Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: GradientButton(onPressed: () => {
+                            generateCaption(imagesWithCaptions[currentPage - 1])
+
+                          }),
+                        )
+                        : null,
               ),
+
               maxLines: null,
               onChanged: (nuevoTexto) {
                 // Cada vez que cambia el texto, lo guardamos en el notifier
@@ -188,7 +200,10 @@ class _FishingCalculatorScreenState
       builder: (context) {
         return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
+            padding: const EdgeInsets.symmetric(
+              vertical: 20.0,
+              horizontal: 16.0,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -259,6 +274,12 @@ class _FishingCalculatorScreenState
       },
     );
   }
+
+}
+
+generateCaption(ImageWithCaption imagesWithCaption) {
+  print(imagesWithCaption);
+  
 }
 
 /// Tarjeta “Añadir imagen”
@@ -288,11 +309,7 @@ class _AddImageCard extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.add_a_photo,
-                  size: 48,
-                  color: Colors.grey,
-                ),
+                Icon(Icons.add_a_photo, size: 48, color: Colors.grey),
                 SizedBox(height: 8),
                 Text(
                   'Añadir imagen',

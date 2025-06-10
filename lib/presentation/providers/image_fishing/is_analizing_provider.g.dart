@@ -1,27 +1,28 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'generated_images_provider.dart';
+part of 'is_analizing_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$generatedImagesHash() => r'cb6ea5c380093862f19af3b9b929cba428a9a579';
+String _$isAnalizingProviderHash() =>
+    r'a848ad928a20e8d4283e8312c9738e540dc6d02d';
 
-/// See also [GeneratedImages].
-@ProviderFor(GeneratedImages)
-final generatedImagesProvider =
-    NotifierProvider<GeneratedImages, List<String>>.internal(
-      GeneratedImages.new,
-      name: r'generatedImagesProvider',
+/// See also [IsAnalizingProvider].
+@ProviderFor(IsAnalizingProvider)
+final isAnalizingProviderProvider =
+    AutoDisposeNotifierProvider<IsAnalizingProvider, bool>.internal(
+      IsAnalizingProvider.new,
+      name: r'isAnalizingProviderProvider',
       debugGetCreateSourceHash:
           const bool.fromEnvironment('dart.vm.product')
               ? null
-              : _$generatedImagesHash,
+              : _$isAnalizingProviderHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
-typedef _$GeneratedImages = Notifier<List<String>>;
+typedef _$IsAnalizingProvider = AutoDisposeNotifier<bool>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
