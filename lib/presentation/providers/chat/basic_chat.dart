@@ -74,17 +74,17 @@ class BasicChat extends _$BasicChat {
   }) async {
     _createTextMessage('Gemini está pensando...', geminiUser);
 
-    gemini.getResponseStream(prompt, files: images).listen((responseChunk) {
-      if (responseChunk.isEmpty) return;
+    // gemini.getResponseStream(prompt, files: images).listen((responseChunk) {
+    //   if (responseChunk.isEmpty) return;
 
-      final updatedMessages = [...state];
-      final updatedMessage = (updatedMessages.first as TextMessage).copyWith(
-        text: responseChunk,
-      );
+    //   final updatedMessages = [...state];
+    //   final updatedMessage = (updatedMessages.first as TextMessage).copyWith(
+    //     text: responseChunk,
+    //   );
 
-      updatedMessages[0] = updatedMessage;
-      state = updatedMessages;
-    });
+    //   updatedMessages[0] = updatedMessage;
+    //   state = updatedMessages;
+    // });
 
     // _createTextMessage(textResponse, geminiUser);
   }

@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:mime/mime.dart';
+import 'package:http_parser/http_parser.dart';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -24,35 +26,61 @@ class GeminiImpl {
       
   }
 
-  Stream<String> getResponseStream(String prompt, { List<XFile> files = const[]}) async* {
+  Future<String> getResponseStream(
+  String prompt, {
+  List<XFile> files = const [],
+}) async {
+  // 1. Preparo el FormData con prompt + archivos
+   final formData = FormData()..fields.add(MapEntry('prompt', prompt));
 
-    final formData = FormData();
-    formData.fields.add(MapEntry('prompt', prompt));
+  for (final file in files) {
+    // 1) averiguo mimeType, p.e. "image/jpeg"
+    final mimeStr = lookupMimeType(file.path) ?? 'application/octet-stream';
+    final parts = mimeStr.split('/');
+    // 2) preparo el MultipartFile con contentType
+    final mp = await MultipartFile.fromFile(
+      file.path,
+      filename: file.name,
+      contentType: MediaType(parts[0], parts[1]),
+    );
+    formData.files.add(MapEntry('files', mp));
+  }
 
-    if (files.isNotEmpty){
-      for(final file in files.reversed){
-        formData.files.add(MapEntry('files', await MultipartFile.fromFile(
-          file.path, filename: file.name
-        )));
-      }
-    }
+  try {
+    // 2. Hago la petición normal (json), sin stream
+    final response = await http.post(
+      '/basic-prompt-stream',
+      data: formData,
+      options: Options(responseType: ResponseType.json),
+    );
 
-    final body = { 'prompt' : prompt};
-      final response = await http.post('/basic-prompt-stream', data: formData, options: Options(
-        responseType: ResponseType.stream
-      ));
+    // 3. Devuelvo el body como String
+    //    Si tu API regresa JSON, podés hacer:
+    //    return response.data['result'] as String;
+    return response.data.toString();
+  } on DioError catch (dioErr) {
+    // 4. Manejo de errores específico de Dio
+    final msg = dioErr.response?.statusCode == 400
+        ? 'Petición mal formada'
+        : dioErr.message;
+    throw Exception('Error al obtener respuesta: $msg');
+  } catch (e) {
+    // 5. Otros errores
+    throw Exception('Error inesperado: $e');
+  }
 
 
-      final stream = response.data.stream as Stream<List<int>>;
-      String buffer = '';
 
-      await for ( final chunk in stream ){
+      // final stream = response.data.stream as Stream<List<int>>;
+      // String buffer = '';
+
+      // await for ( final chunk in stream ){
         
-        final chunkString = utf8.decode(chunk, allowMalformed: true);
-        buffer += chunkString;
-        yield buffer;
+      //   final chunkString = utf8.decode(chunk, allowMalformed: true);
+      //   buffer += chunkString;
+      //   yield buffer;
 
-      }
+      // }
   }
 
 

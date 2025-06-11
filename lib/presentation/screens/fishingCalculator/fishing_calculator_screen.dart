@@ -1,7 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_chat_types/flutter_chat_types.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gemini_app/presentation/providers/chat/chat_with_context.dart';
+import 'package:gemini_app/presentation/providers/image_fishing/generated_analisis_provider.dart';
 import 'package:gemini_app/presentation/providers/users/user_provider.dart';
 import 'package:gemini_app/presentation/widgets/buttons/gradientButton.dart';
 import 'package:image_picker/image_picker.dart';
@@ -274,13 +277,18 @@ class _FishingCalculatorScreenState
       },
     );
   }
+  void generateCaption(ImageWithCaption imagesWithCaption) {
+  print(imagesWithCaption.file);
+  final user = ref.watch(userProvider);
+  final generatedAnalisisNotifier = ref.read(generatedAnalisisProviderProvider.notifier);
+  generatedAnalisisNotifier.sendPrompt(prompt: 'Dame los siguientes datos de la imagen. Peso. Color. Region. Recomendaciones de pesca', images: [imagesWithCaption.file]);
 
-}
-
-generateCaption(ImageWithCaption imagesWithCaption) {
-  print(imagesWithCaption);
+  
   
 }
+}
+
+
 
 /// Tarjeta “Añadir imagen”
 class _AddImageCard extends StatelessWidget {
