@@ -25,19 +25,42 @@ class GeminiImpl {
     }
       
   }
-
-  Future<String> getResponseStream(
-  String prompt, {
-  List<XFile> files = const [],
+  Future<Map<String, dynamic>> getResponseFishingStream({
+  required List<XFile> files,
 }) async {
-  // 1. Preparo el FormData con prompt + archivos
-   final formData = FormData()..fields.add(MapEntry('prompt', prompt));
+  // 1) Prompt base con ejemplo
+  const basePrompt = '''
+Describe el pez de la imagen. Te va a ingresar la imagen de un pez.
+Necesito que devuelvas un JSON EXACTO como el siguiente (pon mucha énfasis en tamaño y peso; los datos que no sepas, déjalos en blanco):
 
+{
+  "nombreComun": "",
+  "nombreCientifico": "",
+  "tamanio-largo": "",
+  "tamanio-ancho": "",
+  "peso": "",
+  "color": "",
+  "especie": ""
+}
+''';
+
+  const ejemplo = {
+    "nombreComun": "Lubina rayada",
+    "nombreCientifico": "Morone saxatilis",
+    "tamanio-largo": "20cm",
+    "tamanio-ancho": "8cm",
+    "peso": "1 Kg",
+    "color": "plateado con líneas azules",
+    "especie": "Morone saxatilis"
+  };
+  final ejemploTexto = const JsonEncoder.withIndent('  ').convert(ejemplo);
+  final prompt = '$basePrompt\nEjemplo de JSON:\n$ejemploTexto';
+
+  // 2) Construyo el FormData
+  final formData = FormData()..fields.add(MapEntry('prompt', prompt));
   for (final file in files) {
-    // 1) averiguo mimeType, p.e. "image/jpeg"
     final mimeStr = lookupMimeType(file.path) ?? 'application/octet-stream';
     final parts = mimeStr.split('/');
-    // 2) preparo el MultipartFile con contentType
     final mp = await MultipartFile.fromFile(
       file.path,
       filename: file.name,
@@ -47,41 +70,56 @@ class GeminiImpl {
   }
 
   try {
-    // 2. Hago la petición normal (json), sin stream
+    // 3) Uso tu cliente `http` para hacer la llamada
     final response = await http.post(
-      '/basic-prompt-stream',
+      '/basic-prompt-stream-fishing',
       data: formData,
       options: Options(responseType: ResponseType.json),
     );
 
-    // 3. Devuelvo el body como String
-    //    Si tu API regresa JSON, podés hacer:
-    //    return response.data['result'] as String;
-    return response.data.toString();
-  } on DioError catch (dioErr) {
-    // 4. Manejo de errores específico de Dio
-    final msg = dioErr.response?.statusCode == 400
+    // 4) Parseo la respuesta a Map<String, dynamic>
+final raw = response.data;
+
+// Si viene como String, quitamos cualquier texto antes/después del JSON
+String jsonString;
+if (raw is String) {
+  final text = raw;
+  final start = text.indexOf('{');
+  final end   = text.lastIndexOf('}');
+  if (start != -1 && end != -1 && end > start) {
+    jsonString = text.substring(start, end + 1);
+  } else {
+    // No encontramos llaves: usamos todo como está
+    jsonString = text;
+  }
+} else {
+  // Si no es String, lo convertimos directamente a JSON
+  jsonString = json.encode(raw);
+}
+
+// Ahora sí decodificamos
+final Map<String, dynamic> decoded = json.decode(jsonString) as Map<String, dynamic>;
+
+// 5) Devuelvo sólo los campos que me interesan
+return {
+  'nombreComun':      decoded['nombreComun']      ?? '',
+  'nombreCientifico': decoded['nombreCientifico'] ?? '',
+  'tamanio-largo':    decoded['tamanio-largo']    ?? '',
+  'tamanio-ancho':    decoded['tamanio-ancho']    ?? '',
+  'peso':             decoded['peso']             ?? '',
+  'color':            decoded['color']            ?? '',
+  'especie':          decoded['especie']          ?? '',
+};
+
+  } on DioError catch (e) {
+    final msg = (e.response?.statusCode == 400)
         ? 'Petición mal formada'
-        : dioErr.message;
-    throw Exception('Error al obtener respuesta: $msg');
+        : e.message;
+    throw Exception('Error al obtener respuesta de IA: $msg');
   } catch (e) {
-    // 5. Otros errores
     throw Exception('Error inesperado: $e');
   }
-
-
-
-      // final stream = response.data.stream as Stream<List<int>>;
-      // String buffer = '';
-
-      // await for ( final chunk in stream ){
-        
-      //   final chunkString = utf8.decode(chunk, allowMalformed: true);
-      //   buffer += chunkString;
-      //   yield buffer;
-
-      // }
-  }
+}
 
 
   Stream<String> getChatStream(String prompt, String chatId, { List<XFile> files = const[]}) async* {

@@ -16,7 +16,7 @@ class ImageWithCaption {
   final XFile file;
   String caption;
 
-  ImageWithCaption({required this.file, this.caption = ''});
+  ImageWithCaption({required this.file, this.caption = 'Caption inicial'});
 }
 
 /// Notifier que guarda la lista de (imagen + texto)
@@ -35,6 +35,10 @@ class GalleryImagesNotifier extends StateNotifier<List<ImageWithCaption>> {
     copy[index].caption = newCaption;
     state = copy;
   }
+
+  void updateAnalysis(int index, AnalysisResult analysis) {
+    //todo
+  }
 }
 
 /// Provider público para la lista de ImageWithCaption
@@ -50,8 +54,6 @@ final currentPageProvider = StateProvider<int>((ref) => 0);
 class FishingCalculatorScreen extends ConsumerStatefulWidget {
   const FishingCalculatorScreen({super.key});
 
-  
-
   @override
   ConsumerState<FishingCalculatorScreen> createState() =>
       _FishingCalculatorScreenState();
@@ -65,7 +67,7 @@ class _FishingCalculatorScreenState
   @override
   void initState() {
     super.initState();
-    
+
     _pageController = PageController(viewportFraction: 0.6, initialPage: 0);
 
     _textController = TextEditingController();
@@ -82,7 +84,7 @@ class _FishingCalculatorScreenState
         final imagesList = ref.read(galleryImagesProvider);
         if (newPage == 0) {
           // Si estamos en “Agregar imagen”, limpiamos el TextField
-          _textController.text = '';
+          _textController.text = 'as';
         } else {
           // Si estamos en una imagen real, cargamos la leyenda guardada
           final idx = newPage - 1; // porque index 0 = tarjeta “Añadir”
@@ -105,12 +107,15 @@ class _FishingCalculatorScreenState
 
   @override
   Widget build(BuildContext context) {
-
     final user = ref.watch(userProvider);
     // Obtenemos la lista actualizada de (imagen + caption)
     final imagesWithCaptions = ref.watch(galleryImagesProvider);
     // Obtenemos el índice de página activo
     final currentPage = ref.watch(currentPageProvider);
+    final String ubicacion;
+    final String mejorHora;
+    final String temperatura;
+    final String condicionesMar;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Fishing AI')),
@@ -165,10 +170,21 @@ class _FishingCalculatorScreenState
                     currentPage != 0
                         ? Padding(
                           padding: const EdgeInsets.only(right: 8.0),
-                          child: GradientButton(onPressed: () => {
-                            generateCaption(imagesWithCaptions[currentPage - 1])
+                          child: GradientButton(
+                            onPressed: () {
+                              final idx = currentPage - 1;
+                              final pair = imagesWithCaptions[idx];
+                              final generatedAnalisisNotifier = ref.read(
+                                generatedAnalisisProviderProvider.notifier,
+                              );
 
-                          }),
+                              // PASO SOLO EL ARCHIVO
+                              generatedAnalisisNotifier.generateCaption(
+                                idx,
+                                pair.file,
+                              );
+                            },
+                          ),
                         )
                         : null,
               ),
@@ -187,7 +203,109 @@ class _FishingCalculatorScreenState
           ),
 
           const SizedBox(height: 16),
-          // … aquí podrías insertar más widgets, un botón, etc.
+
+          const SizedBox(height: 16),
+
+          Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            color: Color(0xFFE6F7FC),
+            margin: EdgeInsets.symmetric(horizontal: 16),
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Consejos de Pesca',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue.shade900,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildAdviceRow(
+                    'Carnada',
+                    'Sardinas, anchoas, gusanos marinos',
+                  ),
+                  _buildAdviceRow(
+                    'Técnica',
+                    'Pesca al curricán o con señuelos',
+                  ),
+                  _buildAdviceRow('Época', 'Primavera y otoño son ideales'),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            color: Color(0xFFE6F7FC),
+            margin: EdgeInsets.all(16),
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Condiciones Ideales de Pesca',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue.shade900,
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  _buildRow(
+                    Icons.place,
+                    'Ubicación',
+                    'Arrecifes rocosos, desembocaduras de ríos',
+                  ),
+                  _buildRow(
+                    Icons.wb_sunny,
+                    'Mejor hora',
+                    'Temprano en la mañana o al atardecer',
+                  ),
+                  _buildRow(Icons.thermostat, 'Temperatura', '20-26°C'),
+                  _buildRow(
+                    Icons.waves,
+                    'Condiciones del mar',
+                    'Oleaje suave, aguas claras',
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  backgroundColor: const Color(0xFF00B4D8),
+                ),
+                onPressed: () {
+                  // Acción para guardar en historial
+                },
+                child: const Text(
+                  'Guardar en Historial',
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -277,18 +395,59 @@ class _FishingCalculatorScreenState
       },
     );
   }
-  void generateCaption(ImageWithCaption imagesWithCaption) {
-  print(imagesWithCaption.file);
-  final user = ref.watch(userProvider);
-  final generatedAnalisisNotifier = ref.read(generatedAnalisisProviderProvider.notifier);
-  generatedAnalisisNotifier.sendPrompt(prompt: 'Dame los siguientes datos de la imagen. Peso. Color. Region. Recomendaciones de pesca', images: [imagesWithCaption.file]);
-
-  
-  
-}
 }
 
+Widget _buildRow(IconData icon, String title, String value) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 6.0),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: Colors.blue),
+        const SizedBox(width: 12),
+        Expanded(
+          child: RichText(
+            text: TextSpan(
+              style: TextStyle(color: Colors.black, fontSize: 16),
+              children: [
+                TextSpan(
+                  text: '$title: ',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                TextSpan(text: value),
+              ],
+            ),
+            softWrap: true,
+            overflow: TextOverflow.visible,
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
+Widget _buildAdviceRow(String title, String value) {
+  return Container(
+    margin: const EdgeInsets.only(bottom: 8),
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: RichText(
+      text: TextSpan(
+        style: TextStyle(color: Colors.black, fontSize: 16),
+        children: [
+          TextSpan(
+            text: '$title: ',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          TextSpan(text: value),
+        ],
+      ),
+    ),
+  );
+}
 
 /// Tarjeta “Añadir imagen”
 class _AddImageCard extends StatelessWidget {
