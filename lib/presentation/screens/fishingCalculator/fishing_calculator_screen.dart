@@ -15,8 +15,9 @@ import 'package:gemini_app/config/theme/app_theme.dart';
 class ImageWithCaption {
   final XFile file;
   String caption;
+  AnalysisResult? analysis;
 
-  ImageWithCaption({required this.file, this.caption = 'Caption inicial'});
+  ImageWithCaption({required this.file, this.caption = '', this.analysis});
 }
 
 /// Notifier que guarda la lista de (imagen + texto)
@@ -37,7 +38,14 @@ class GalleryImagesNotifier extends StateNotifier<List<ImageWithCaption>> {
   }
 
   void updateAnalysis(int index, AnalysisResult analysis) {
-    //todo
+    if (index < 0 || index >= state.length) return;
+    final copy = [...state];
+    copy[index] = ImageWithCaption(
+      file: copy[index].file,
+      caption: copy[index].caption,
+      analysis: analysis,
+    );
+    state = copy;
   }
 }
 
@@ -47,7 +55,7 @@ final galleryImagesProvider =
       (ref) => GalleryImagesNotifier(),
     );
 
-/// Provider para guardar el índice de página actual (0 = “Agregar imagen”)
+/// Provider para guardar el índice de página actual (0 = "Agregar imagen")
 final currentPageProvider = StateProvider<int>((ref) => 0);
 
 /// Pantalla principal
@@ -83,11 +91,11 @@ class _FishingCalculatorScreenState
         // Obtenemos la lista de imágenes + leyendas
         final imagesList = ref.read(galleryImagesProvider);
         if (newPage == 0) {
-          // Si estamos en “Agregar imagen”, limpiamos el TextField
+          // Si estamos en "Agregar imagen", limpiamos el TextField
           _textController.text = 'as';
         } else {
           // Si estamos en una imagen real, cargamos la leyenda guardada
-          final idx = newPage - 1; // porque index 0 = tarjeta “Añadir”
+          final idx = newPage - 1; // porque index 0 = tarjeta "Añadir"
           if (idx >= 0 && idx < imagesList.length) {
             _textController.text = imagesList[idx].caption;
           } else {
@@ -108,205 +116,237 @@ class _FishingCalculatorScreenState
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(userProvider);
-    // Obtenemos la lista actualizada de (imagen + caption)
     final imagesWithCaptions = ref.watch(galleryImagesProvider);
-    // Obtenemos el índice de página activo
     final currentPage = ref.watch(currentPageProvider);
-    final String ubicacion;
-    final String mejorHora;
-    final String temperatura;
-    final String condicionesMar;
+
+    // Obtengo el análisis de la imagen seleccionada (si hay una seleccionada)
+    AnalysisResult? analysis;
+    if (currentPage > 0 && currentPage - 1 < imagesWithCaptions.length) {
+      analysis = imagesWithCaptions[currentPage - 1].analysis;
+    }
 
     return Scaffold(
       appBar: AppBar(title: const Text('Fishing AI')),
       backgroundColor: lightBlue,
-      body: Column(
-        children: [
-          //* ------------------------------
-          //* 1) Carrusel de imágenes (o “Añadir imagen”)
-          //* ------------------------------
-          SizedBox(
-            height: 250,
-            child: PageView.builder(
-              controller: _pageController,
-              padEnds: true,
-              itemCount: imagesWithCaptions.length + 1,
-              itemBuilder: (context, index) {
-                if (index == 0) {
-                  // Tarjeta “Añadir imagen”
-                  return _AddImageCard(onTap: () => _showImageSourceOptions());
-                } else {
-                  // Tarjeta que muestra la foto existente
-                  final pair = imagesWithCaptions[index - 1];
-                  return _ImageCard(file: pair.file);
-                }
-              },
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          //* ------------------------------
-          //* 2) Campo de texto que cambia según la imagen
-          //* ------------------------------
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: TextField(
-              controller: _textController,
-              enabled:
-                  currentPage != 0, // Solo editable si no estamos en “Agregar”
-              decoration: InputDecoration(
-                hintText:
-                    currentPage == 0
-                        ? 'Desliza a una imagen para agregar texto'
-                        : null, // eliminamos hint si queremos mostrar botón
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              //* ------------------------------
+              //* 1) Carrusel de imágenes (o "Añadir imagen")
+              //* ------------------------------
+              SizedBox(
+                height: 250,
+                child: PageView.builder(
+                  controller: _pageController,
+                  padEnds: true,
+                  itemCount: imagesWithCaptions.length + 1,
+                  itemBuilder: (context, index) {
+                    if (index == 0) {
+                      // Tarjeta "Añadir imagen"
+                      return _AddImageCard(onTap: () => _showImageSourceOptions());
+                    } else {
+                      // Tarjeta que muestra la foto existente
+                      final pair = imagesWithCaptions[index - 1];
+                      return _ImageCard(file: pair.file);
+                    }
+                  },
                 ),
-                suffixIcon:
-                    currentPage != 0
-                        ? Padding(
-                          padding: const EdgeInsets.only(right: 8.0),
-                          child: GradientButton(
-                            onPressed: () {
-                              final idx = currentPage - 1;
-                              final pair = imagesWithCaptions[idx];
-                              final generatedAnalisisNotifier = ref.read(
-                                generatedAnalisisProviderProvider.notifier,
-                              );
-
-                              // PASO SOLO EL ARCHIVO
-                              generatedAnalisisNotifier.generateCaption(
-                                idx,
-                                pair.file,
-                              );
-                            },
-                          ),
-                        )
-                        : null,
               ),
 
-              maxLines: null,
-              onChanged: (nuevoTexto) {
-                // Cada vez que cambia el texto, lo guardamos en el notifier
-                if (currentPage > 0) {
-                  final idx = currentPage - 1;
-                  ref
-                      .read(galleryImagesProvider.notifier)
-                      .updateCaption(idx, nuevoTexto);
-                }
-              },
-            ),
-          ),
+              const SizedBox(height: 8),
 
-          const SizedBox(height: 16),
-
-          const SizedBox(height: 16),
-
-          Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            color: Color(0xFFE6F7FC),
-            margin: EdgeInsets.symmetric(horizontal: 16),
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Consejos de Pesca',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue.shade900,
+              //* ------------------------------
+              //* 2) Campo de texto que cambia según la imagen
+              //* ------------------------------
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: TextField(
+                  controller: _textController,
+                  enabled:
+                      currentPage != 0, // Solo editable si no estamos en "Agregar"
+                  decoration: InputDecoration(
+                    hintText:
+                        currentPage == 0
+                            ? 'Desliza a una imagen para agregar texto'
+                            : null, // eliminamos hint si queremos mostrar botón
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
                     ),
+                    suffixIcon:
+                        currentPage != 0
+                            ? Padding(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: GradientButton(
+                                onPressed: () {
+                                  final idx = currentPage - 1;
+                                  final pair = imagesWithCaptions[idx];
+                                  final generatedAnalisisNotifier = ref.read(
+                                    generatedAnalisisProviderProvider.notifier,
+                                  );
+                                  generatedAnalisisNotifier.generateCaption(
+                                    idx,
+                                    pair.file,
+                                  );
+                                },
+                              ),
+                            )
+                            : null,
                   ),
-                  const SizedBox(height: 16),
-                  _buildAdviceRow(
-                    'Carnada',
-                    'Sardinas, anchoas, gusanos marinos',
-                  ),
-                  _buildAdviceRow(
-                    'Técnica',
-                    'Pesca al curricán o con señuelos',
-                  ),
-                  _buildAdviceRow('Época', 'Primavera y otoño son ideales'),
-                ],
+                  maxLines: null,
+                  onChanged: (nuevoTexto) {
+                    if (currentPage > 0) {
+                      final idx = currentPage - 1;
+                      ref
+                          .read(galleryImagesProvider.notifier)
+                          .updateCaption(idx, nuevoTexto);
+                    }
+                  },
+                ),
               ),
-            ),
-          ),
 
-          const SizedBox(height: 16),
-
-          Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            color: Color(0xFFE6F7FC),
-            margin: EdgeInsets.all(16),
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Condiciones Ideales de Pesca',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue.shade900,
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  _buildRow(
-                    Icons.place,
-                    'Ubicación',
-                    'Arrecifes rocosos, desembocaduras de ríos',
-                  ),
-                  _buildRow(
-                    Icons.wb_sunny,
-                    'Mejor hora',
-                    'Temprano en la mañana o al atardecer',
-                  ),
-                  _buildRow(Icons.thermostat, 'Temperatura', '20-26°C'),
-                  _buildRow(
-                    Icons.waves,
-                    'Condiciones del mar',
-                    'Oleaje suave, aguas claras',
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 20),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+              // NUEVO: Mostrar cards de análisis si existen
+              if (analysis != null) ...[
+                const SizedBox(height: 16),
+                Card(
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  backgroundColor: const Color(0xFF00B4D8),
+                  color: Color(0xFFE6F7FC),
+                  margin: EdgeInsets.symmetric(horizontal: 16),
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Análisis de la Presa',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue.shade900,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        _buildAdviceRow('Especie', analysis.species),
+                        _buildAdviceRow('Peso estimado', analysis.weight),
+                        _buildAdviceRow('Tamaño', analysis.size),
+                        _buildAdviceRow('Color', analysis.color),
+                      ],
+                    ),
+                  ),
                 ),
-                onPressed: () {
-                  // Acción para guardar en historial
-                },
-                child: const Text(
-                  'Guardar en Historial',
-                  style: TextStyle(fontSize: 16, color: Colors.white),
+              ],
+
+              const SizedBox(height: 16),
+
+              Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                color: Color(0xFFE6F7FC),
+                margin: EdgeInsets.symmetric(horizontal: 16),
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Consejos de Pesca',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue.shade900,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildAdviceRow(
+                        'Carnada',
+                        'Sardinas, anchoas, gusanos marinos',
+                      ),
+                      _buildAdviceRow(
+                        'Técnica',
+                        'Pesca al curricán o con señuelos',
+                      ),
+                      _buildAdviceRow('Época', 'Primavera y otoño son ideales'),
+                    ],
+                  ),
                 ),
               ),
-            ),
+
+              const SizedBox(height: 16),
+
+              Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                color: Color(0xFFE6F7FC),
+                margin: EdgeInsets.all(16),
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Condiciones Ideales de Pesca',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue.shade900,
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      _buildRow(
+                        Icons.place,
+                        'Ubicación',
+                        'Arrecifes rocosos, desembocaduras de ríos',
+                      ),
+                      _buildRow(
+                        Icons.wb_sunny,
+                        'Mejor hora',
+                        'Temprano en la mañana o al atardecer',
+                      ),
+                      _buildRow(Icons.thermostat, 'Temperatura', '20-26°C'),
+                      _buildRow(
+                        Icons.waves,
+                        'Condiciones del mar',
+                        'Oleaje suave, aguas claras',
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      backgroundColor: const Color(0xFF00B4D8),
+                    ),
+                    onPressed: () {
+                      // Acción para guardar en historial
+                    },
+                    child: const Text(
+                      'Guardar en Historial',
+                      style: TextStyle(fontSize: 16, color: Colors.white),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -449,7 +489,7 @@ Widget _buildAdviceRow(String title, String value) {
   );
 }
 
-/// Tarjeta “Añadir imagen”
+/// Tarjeta "Añadir imagen"
 class _AddImageCard extends StatelessWidget {
   final VoidCallback onTap;
   const _AddImageCard({required this.onTap});

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 const Color primaryBlue = Color(0xFF00B8D4);     // Parte superior del gradiente, botones
-const Color lightBlue = Color(0xFFB2EBF2);       // Fondo claro
+const Color lightBlue = Color.fromARGB(255, 236, 253, 255);       // Fondo claro
 const Color white = Color(0xFFFFFFFF);           // Textos y fondos
 const Color seedColor = Color(0xFF005662);       // Títulos como "Pescador Experto"
 const Color statBlue = Color(0xFF00ACC1);        // Iconos circulares de estadísticas

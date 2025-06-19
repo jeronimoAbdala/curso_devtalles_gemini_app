@@ -48,6 +48,15 @@ class HomeScreen extends StatelessWidget {
             subtitle: const Text('Calcula y mostra los detalles de tu pesca '),
             onTap: () => context.push('/fishingCalculator'),
           ),
+          ListTile(
+            leading: const CircleAvatar(
+              backgroundColor: Colors.redAccent,
+              child: Icon(Icons.personal_injury),
+            ),
+            title: const Text('Cuenta personal'),
+            subtitle: const Text('Calcula y mostra los detalles de tu pesca '),
+            onTap: () => context.push('/ProfileScreen'),
+          ),
         ],
       ),
     );
